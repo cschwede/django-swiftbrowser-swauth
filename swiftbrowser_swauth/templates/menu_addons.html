@@ -1,0 +1,22 @@
+{% load i18n %}
+{% url "change_password" as change_password_url %}
+{% if change_password_url %}
+    <li>
+        <a href="{% url "change_password" %}">
+        <i class="icon-edit"></i>
+         {% trans 'Change password' %}
+        </a>
+    </li>
+{% endif %}
+{% url "userlist" as userlist_url %}
+{% if userlist_url %}
+    <li>
+        <a href="{% url "userlist" %}">
+        <i class="icon-user"></i>
+        {% trans 'User administration' %}
+        </a>
+    </li>
+{% endif %}
+    <li class="divider" />
+
+

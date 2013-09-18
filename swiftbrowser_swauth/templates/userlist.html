@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container">
+
+    {% include "messages.html" %}
+
+
+    <div id="delete_user_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="delete_user_modalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="delete_user_modalLabel">Delete user</h3>
+        </div>
+
+        <form method="post" action="{% url "delete_user" %}" class="form-horizontal">
+            <div class="modal-body">
+            <p>Please confirm the deletion of the following user with your password. </p>
+                {% csrf_token %}
+
+                <div class="control-group">
+                    <label class="control-label" for="username">Username</label>
+                    <div class="controls">
+                        <input type="text" name="username" id="delete_user">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                        <input class="focused" name="password" type="password" placeholder="{% trans 'Your Password' %}"><br />
+                    </div>
+                </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-danger ">Delete user</button>
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        </div>
+        </form>
+    </div>
+
+    {% if not users %}
+        <p>Please enter your password to show list of users in this account. </p>
+
+        <form method="post" action="{% url "userlist" %}">
+            {% csrf_token %}
+            <input class="focused" name="password" type="password" placeholder="{% trans 'Passwort' %}">
+
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <a href="{% url "containerview" %}" class="leftspace btn btn-danger">Cancel</a>
+                </div>
+            </div>
+
+
+        </form>
+    {% endif %}
+
+    {% if users %}
+    <table class="table table-striped">
+
+    <thead class="uhidden-phone">
+	<tr> 
+    <th colspan="4">
+        <a class="u" href="/">Users</a>
+        <span class="pull-right"> <a href="{% url "create_user" %}" class="btn btn-danger btn-mini"><i class="icon-plus icon-white"></i></a></li> </span>
+    </th> </tr>
+
+    </thead>
+    <tbody>
+    {% for user in users %}
+        <tr>
+        <td style="width: 14px;" class="hidden-phone"> <i class="icon-user"></i></td> 
+        <td><strong>{{user.0}}</a></strong></td>
+        {% if user.1 %}
+            <td style="width: 1em"> <span class="label label-important">Admin</span> </td>
+        {% else %}
+            <td></td>
+        {% endif %}
+        
+        {% if user.0 == username %}
+	        <td class="hidden-phone" style="width: 1em;">
+                <a href="" class="btn btn-danger btn-mini disabled"><i class="icon-trash icon-white"></i></a>
+            </td>
+        {% else %}
+	        <td class="hidden-phone" style="width: 1em;">
+
+                <a onclick="document.getElementById('delete_user').value='{{user.0}}';"  href="#delete_user_modal" role="button" class="btn btn-danger btn-mini pull-right" data-toggle="modal"><i class="icon-trash icon-white"></i></a>
+
+            </td>
+        {% endif %}
+        </tr> 
+    {% endfor %}
+    </tbody> 
+    </table>
+    {% endif %}
+
+</div>
+{% endblock %}
+
