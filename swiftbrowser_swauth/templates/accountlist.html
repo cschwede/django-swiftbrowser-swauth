@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container">
+
+    {% include "messages.html" %}
+
+
+    
+    <div id="set_quota_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="set_quota_modalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="set_quota_modalLabel">Set quota</h3>
+        </div>
+
+        <form id="set_quota_form" method="post" action="" class="form-horizontal">
+            <div class="modal-body">
+            <p>Please confirm with your password. </p>
+                {% csrf_token %}
+
+                <div class="control-group">
+                    <label class="control-label" for="quota">Quota (GB)</label>
+                    <div class="controls">
+                        <input type="text" name="quota" id="set_quota" placeholder="{% trans 'Quota in Gigabyte' %}">
+                        <span class="help-block"> 
+                            If left free, the quota will be unlimited.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                        <input class="focused" name="password" type="password" placeholder="{% trans 'Your Password' %}"><br />
+                    </div>
+                </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-danger ">Set quota</button>
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        </div>
+        </form>
+    </div>
+    
+    <div id="delete_account_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="delete_account_modalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="delete_account_modalLabel">Delete account</h3>
+        </div>
+
+        <form method="post" action="{% url "delete_account" %}" class="form-horizontal">
+            <div class="modal-body">
+            <p>Please confirm the deletion of the following user with your password. </p>
+                {% csrf_token %}
+
+                <div class="control-group">
+                    <label class="control-label" for="account">Account</label>
+                    <div class="controls">
+                        <input type="text" name="account" id="delete_account">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                        <input class="focused" name="password" type="password" placeholder="{% trans 'Your Password' %}"><br />
+                    </div>
+                </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-danger ">Delete account</button>
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        </div>
+        </form>
+    </div>
+
+    {% if not accounts %}
+        <p>Please enter your password to show list of accounts.</p>
+
+        <form method="post" action="{% url "accountlist" %}">
+            {% csrf_token %}
+            <input class="focus" name="password" type="password" placeholder="{% trans 'Passwort' %}" autofocus>
+
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <a href="{% url "containerview" %}" class="leftspace btn btn-danger">Cancel</a>
+                </div>
+            </div>
+
+
+        </form>
+    {% endif %}
+
+    {% if accounts %}
+    <table class="table table-striped">
+
+    <thead class="uhidden-phone">
+	<tr> 
+    <th>
+        <strong>Accounts</strong>
+        
+    </th> 
+    <th>
+        <strong>Usage</strong>
+    </th>
+    <th>
+        <strong>Quota</strong>
+    </th>
+    <th>
+        <a href="{% url "create_account" %}" class="btn btn-danger btn-mini"><i class="icon-plus icon-white"></i></a>
+    </th>
+    </tr>
+
+    </thead>
+    <tbody>
+    {% for account, account_stat in accounts.iteritems %}
+        <tr>
+        <td><strong><a href="{% url "userlist_with_account" account %}">{{account}}</a></strong></td>
+        <td>{{account_stat.x_account_bytes_used|filesizeformat}}</td>
+        <td><a onclick="document.getElementById('set_quota_form').action='{% url "set_quota" account %}';"  href="#set_quota_modal" role="button" class="btn btn-link" data-toggle="modal"> {% if account_stat.x_account_meta_quota_bytes %}{{account_stat.x_account_meta_quota_bytes|filesizeformat}}{% else %} Unlimited{% endif %}</a></td>
+        <td>
+            <a onclick="document.getElementById('delete_account').value='{{account}}';"  href="#delete_account_modal" role="button" class="btn btn-danger btn-mini" data-toggle="modal"><i class="icon-trash icon-white"></i></a>
+        </td>
+        </tr>
+    {% endfor %}
+    </tbody> 
+
+
+
+    {% if diskUsage %}
+    <tfoot>
+        <tr>
+            <th colspan="5" class="center">
+                Disk space used: {{diskUsage.spaceUsed}} bytes of {{diskUsage.spaceTotal}} bytes ( {{diskUsage.percentage|stringformat:".4f"}} % )
+            </th>
+        </tr>
+    </tfoot>
+
+    {% endif %}
+    
+    </table>
+    
+    {% endif %}
+
+</div>
+{% endblock %}
+

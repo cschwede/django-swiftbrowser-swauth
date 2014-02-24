@@ -11,14 +11,14 @@
 
         <hr />
 
-        <form method="POST" action="{% url "create_user" %}" class="cener form-horizontal">
+        <form method="POST" action="{% url "create_user" account %}" class="cener form-horizontal">
         {% csrf_token %}
 
             <div class="control-group">
                 <label class="control-label" for="new_username">Username</label>
                 <div class="controls">
                     <div class="input-append">
-                        <input class="focused"  name="new_username" id="new_username" type="text" placeholder="{% trans 'Name of new user' %}">
+                        <input class="focused"  name="new_username" id="new_username" type="text" placeholder="{% trans 'Name of new user' %}" autofocus>
                         <a class="btn" id="random_username">Random</a>
                     </div>
                     <span class="help-block"> 
@@ -38,6 +38,13 @@
                     <span class="help-block"> 
                         Click "Random" if you want to use a random password.
                     </span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="new_password2">Password (repeat)</label>
+                <div class="controls">
+                    <input class="focused" name="new_password2" id="new_password2" type="text" placeholder="Repeat password of new user">
                 </div>
             </div>
 
@@ -67,7 +74,7 @@
             <div class="control-group">
                 <div class="controls">
                     <button type="submit" class="btn btn-primary">Create</button>
-                    <a href="{% url "userlist" %}" class="leftspace btn btn-danger" onClick="history.back();exit(0);">Cancel</a>
+                    <a href="{% url "userlist_with_account" account %}" class="leftspace btn btn-danger" onClick="history.back();exit(0);">Cancel</a>
                 </div>
             </div>
 
@@ -81,6 +88,6 @@
 {% block jsadd %}
 <script>
 $("#random_username").click(function () { $("#new_username").val("{{random_username}}");});
-$("#random_password").click(function () { $("#new_password").val("{{random_password}}");});
+$("#random_password").click(function () { $("#new_password").val("{{random_password}}");$("#new_password2").val("{{random_password}}");});
 </script>
 {% endblock %}

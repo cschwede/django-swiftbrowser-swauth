@@ -1,6 +1,7 @@
 {% load i18n %}
 {% url "change_password" as change_password_url %}
 {% if change_password_url %}
+{% if session.isAdmin or session.isResellerAdmin %}
     <li>
         <a href="{% url "change_password" %}">
         <i class="icon-edit"></i>
@@ -8,14 +9,29 @@
         </a>
     </li>
 {% endif %}
+{% endif %}
 {% url "userlist" as userlist_url %}
 {% if userlist_url %}
-    <li>
-        <a href="{% url "userlist" %}">
-        <i class="icon-user"></i>
-        {% trans 'User administration' %}
-        </a>
-    </li>
+    {%  if session.isAdmin %}   
+        <li>
+            <a href="{% url "userlist" %}">
+            <i class="icon-user"></i>
+                {% trans 'User administration' %}
+            </a>
+        </li>
+    {% endif %}
+{% endif %}
+
+{% url "accountlist" as accountlist_url %}
+{% if accountlist_url %}
+    {% if session.isResellerAdmin %}
+        <li>
+            <a href="{% url "accountlist" %}">
+            <i class="icon-list"></i>
+                {% trans 'Account administration' %}
+            </a>
+        </li>
+    {% endif %}
 {% endif %}
     <li class="divider" />
 

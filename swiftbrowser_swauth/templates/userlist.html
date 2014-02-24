@@ -13,7 +13,7 @@
             <h3 id="delete_user_modalLabel">Delete user</h3>
         </div>
 
-        <form method="post" action="{% url "delete_user" %}" class="form-horizontal">
+        <form method="post" action="{% url "delete_user" account %}" class="form-horizontal">
             <div class="modal-body">
             <p>Please confirm the deletion of the following user with your password. </p>
                 {% csrf_token %}
@@ -39,32 +39,16 @@
         </form>
     </div>
 
-    {% if not users %}
-        <p>Please enter your password to show list of users in this account. </p>
-
-        <form method="post" action="{% url "userlist" %}">
-            {% csrf_token %}
-            <input class="focused" name="password" type="password" placeholder="{% trans 'Passwort' %}">
-
-            <div class="control-group">
-                <div class="controls">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                    <a href="{% url "containerview" %}" class="leftspace btn btn-danger">Cancel</a>
-                </div>
-            </div>
 
 
-        </form>
-    {% endif %}
-
-    {% if users %}
+    {% if access %}
     <table class="table table-striped">
 
     <thead class="uhidden-phone">
 	<tr> 
     <th colspan="4">
-        <a class="u" href="/">Users</a>
-        <span class="pull-right"> <a href="{% url "create_user" %}" class="btn btn-danger btn-mini"><i class="icon-plus icon-white"></i></a></li> </span>
+        <strong>Users</strong> of <strong>{{account}}</strong>
+        <span class="pull-right"> <a href="{% url "create_user" account %}" class="btn btn-danger btn-mini"><i class="icon-plus icon-white"></i></a></li> </span>
     </th> </tr>
 
     </thead>
@@ -74,7 +58,7 @@
         <td style="width: 14px;" class="hidden-phone"> <i class="icon-user"></i></td> 
         <td><strong>{{user.0}}</a></strong></td>
         {% if user.1 %}
-            <td style="width: 1em"> <span class="label label-important">Admin</span> </td>
+            <td style="width: 1em"> <span class="label label-important">{{user.1}}</span> </td>
         {% else %}
             <td></td>
         {% endif %}
@@ -94,6 +78,22 @@
     {% endfor %}
     </tbody> 
     </table>
+    {% else %}
+    <p>Please enter your password to show list of users in this account. </p>
+
+    <form method="post" action="{% url "userlist_with_account" account %}">
+        {% csrf_token %}
+        <input class="focused" name="password" type="password" placeholder="{% trans 'Passwort' %}" autofocus>
+
+        <div class="control-group">
+            <div class="controls">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="{% url "containerview" %}" class="leftspace btn btn-danger">Cancel</a>
+            </div>
+        </div>
+
+
+    </form>
     {% endif %}
 
 </div>

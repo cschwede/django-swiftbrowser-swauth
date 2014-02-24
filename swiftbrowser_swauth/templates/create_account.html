@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container">
+
+    {% include "messages.html" %}
+
+    <div class="row">
+        <h4>Create a new account</h4>
+
+        <hr />
+
+        <form method="POST" action="{% url "create_account" %}" class="cener form-horizontal">
+        {% csrf_token %}
+
+            <div class="control-group">
+                <label class="control-label" for="new_account">Account name</label>
+                <div class="controls">
+                    <div class="input-append">
+                        <input class="focused"  name="new_account" id="new_account" type="text" placeholder="{% trans 'Name of new account' %}">
+                        <a class="btn" id="random_account">Random</a>
+                    </div>
+                    <span class="help-block"> 
+                        Click "Random" if you want to use a random account name.
+                    </span>
+        
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="account_password">Your password</label>
+                <div class="controls">
+                    <input class="focused" name="account_password" id="account_password" type="password" placeholder="Your password">
+                    <span class="help-block"> 
+                        For security reasons you have to enter your own password also.
+                    </span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="quota">Quota (GB)</label>
+                <div class="controls">
+                    <input class="focused" name="quota" id="quota" type="text" placeholder="Quota">
+                    <span class="help-block"> 
+                        If left free, the quota will be unlimited.
+                    </span>
+                </div>
+            </div>
+
+        <hr />
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <a href="{% url "accountlist" %}" class="leftspace btn btn-danger" onClick="history.back();exit(0);">Cancel</a>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+
+{% block jsadd %}
+<script>
+$("#random_account").click(function () { $("#new_account").val("{{random_account}}");});
+</script>
+{% endblock %}
