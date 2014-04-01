@@ -316,49 +316,34 @@ def accountlist_data(request, password):
     diskUsage = {}
     
     #get list of all accounts, if the password is valid
-    #todo: use swauth directly when fixed
     if password:
         if _is_reseller_admin(username, password):
             try:
-                (storage_url, auth_token)  = client.get_auth(settings.SWIFT_AUTH_URL, settings.SUPER_ADMIN_USER, settings.SUPER_ADMIN_KEY)
-                (_, containers) = client.get_account(storage_url, auth_token)
+                url = "%s" % (settings.SWAUTH_URL)
+                headers = {'X-Auth-Admin-User': username, 'X-Auth-Admin-Key': password}
+                resp = requests.get(url, headers=headers, verify=settings.VERIFY_SSL)
+                userdata = json.loads(resp.content)
               
                 accounts = {}
-                for a in containers:
+                for a in userdata['accounts']:
                     if a['name'][0] != '.':
                         accounts[a['name']] = {}
         
+                diskUsage['spaceUsed'] = 0
                 for a in accounts:
                     account_stat = _get_account_stat(a, username, password, auth_token)
                     if account_stat:
                         accounts[a] = account_stat
+                        diskUsage['spaceUsed'] +=  int(account_stat['x_account_bytes_used'])
             
-                try: 
-                    p = subprocess.Popen(['swift-recon', 'object', '-d'], stdout=subprocess.PIPE)
-                    p.wait()
-                    if p.returncode == 0:
-                        s = p.stdout.read()
-                        m1 = re.search( "Disk usage: space used", s)
-                        start = m1.start()
-                        m2 = re.search( "Disk usage: space free", s)
-                        end = m2.start()
-                        fullLine = s[start:end]
-                        m3 = re.search( "Disk usage: space used", fullLine)
-                        m4 = re.search( "of", fullLine )
-                        start = m3.end() + 1
-                        end = m4.start() - 1
-                        diskUsage['spaceUsed'] = int( fullLine[start:end] )
-                        start = m4.end() + 1
-                        diskUsage['spaceTotal'] = int( fullLine[start:] )
-                        diskUsage['percentage'] = 100 * float(diskUsage['spaceUsed']) / diskUsage['spaceTotal'] 
-                        
-                        loc = locale.getlocale(locale.LC_NUMERIC)
-                        locale.setlocale(locale.LC_NUMERIC, 'de_DE.utf-8')
-                        diskUsage['spaceUsed'] = locale.format("%d", diskUsage['spaceUsed'], grouping=True)
-                        diskUsage['spaceTotal'] = locale.format("%d", diskUsage['spaceTotal'], grouping=True)
-                        locale.setlocale(locale.LC_NUMERIC, loc)                
-                except subprocess.CalledProcessError as e:
-                    logger.error("Cannot get disk usage summary. Reason %s" %str(e))
+                diskUsage['spaceTotal'] = int( settings.DISK_SPACE ) * 0.9 / 3
+                diskUsage['percentage'] = 100 * float(diskUsage['spaceUsed']) / diskUsage['spaceTotal'] 
+                    
+                loc = locale.getlocale(locale.LC_NUMERIC)
+                locale.setlocale(locale.LC_NUMERIC, 'de_DE.utf-8')
+                diskUsage['spaceUsed'] = locale.format("%d", diskUsage['spaceUsed'], grouping=True)
+                diskUsage['spaceTotal'] = locale.format("%d", diskUsage['spaceTotal'], grouping=True)
+                locale.setlocale(locale.LC_NUMERIC, loc)                
             except client.ClientException as e:
                 logger.error("Cannot authenticate as super_admin. Reason: %s" %str(e))
                 messages.add_message(request, messages.ERROR, "Can't get account list due to an internal error.")
@@ -372,9 +357,7 @@ def accountlist_data(request, password):
                                },
                               context_instance=RequestContext(request))
 
-    
-
-                              
+                                
 def accountlist(request, password=None):
     """ Login admin to show the accountlist. """
     form = PasswordForm()
