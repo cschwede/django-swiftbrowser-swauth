@@ -39,10 +39,6 @@ def login(request):
 
             if _is_reseller_admin(username, password):
                 request.session['is_reseller'] = True
-                request.session['is_admin'] = True
-            elif _is_admin(username, password):
-                request.session['is_admin'] = True
-
             return redirect(containerview)
 
         except client.ClientException as e:
@@ -461,46 +457,30 @@ def set_quota(request, account):
     return redirect('/')
 
 
-def _get_account_stat(account, admin_username, admin_password, auth_token):
+def get_storage_url(username, password, account):
     url = "%s/%s" % (settings.SWAUTH_URL, account)
-
-    headers = {'X-Auth-Admin-User': admin_username, 'X-Auth-Admin-Key': admin_password}
+    headers = {'X-Auth-Admin-User': username, 'X-Auth-Admin-Key': password}
     try:
         resp = requests.get(url, headers=headers, verify=False)
-        storage_url = json.loads(resp.content)['services']['storage']['cluster_name']
+    except (requests.RequestException) as e:
+        logger.error("Cannot retrieve storage url. %s" % str(e))
+        return None
+    print resp.content
+    return json.loads(resp.content).get('services', {}).get('storage', {}).get('local')
+
+ 
+def _get_account_stat(account, admin_username, admin_password, auth_token):
+    storage_url = get_storage_url(admin_username, admin_password, account)
+    try:
         account_stat, _ = client.get_account(storage_url, auth_token)
-
-        if resp.status_code != 200:
-            return None
-
-    except (client.ClientException, requests.RequestException) as e:
+    except client.ClientException as e:
         logger.error("Cannot retrieve account data. %s" % str(e))
         return None
-
-    account_stat = replace_hyphens(account_stat)
-
-    return account_stat
+    return replace_hyphens(account_stat)
 
 
 def _set_quota(quota, account, admin_username, admin_password, auth_token):
-    url = "%s/%s" % (settings.SWAUTH_URL, account)
-
-    headers = {'X-Auth-Admin-User': admin_username, 'X-Auth-Admin-Key': admin_password}
-    try:
-        resp = requests.get(url, headers=headers, verify=False)
-    except requests.RequestException as e:
-        logger.error("Cannot set quota for account %s. Error:"
-                     "Cannot retrieve storage url for account. %s" %
-                     (account, str(e)))
-
-        return False
-
-    if resp.status_code != 200:
-        logger.error("Cannot set quota for account %s. Error: "
-                     "Cannot retrieve storage url for account." % account)
-        return False
-
-    storage_url = json.loads(resp.content)['services']['storage']['cluster_name']
+    storage_url = get_storage_url(admin_username, admin_password, account)
     try:
         client.post_account(
             storage_url,
@@ -510,31 +490,14 @@ def _set_quota(quota, account, admin_username, admin_password, auth_token):
         logger.error(
             "Cannot set quota for account %s. Error: %s" % (account, str(e)))
         return False
-
     return True
-
-
-def _is_admin(user, password):
-    account = user.split(':')[0]
-    account_url = "%s/%s" % (settings.SWAUTH_URL, account)
-    headers = {'X-Auth-Admin-User': user, 'X-Auth-Admin-Key': password}
-    try:
-        resp = requests.get(account_url, headers=headers, verify=False)
-        if resp.status_code == 200:
-            return True
-    except requests.RequestException as e:
-        logger.error("Cannot verify if user is admin. %s" % str(e))
-
-    return False
 
 
 def _is_reseller_admin(user, password):
     headers = {'X-Auth-Admin-User': user, 'X-Auth-Admin-Key': password}
     try:
-        resp = requests.get(settings.SWAUTH_URL, headers=headers, verify=False)
-        if resp.status_code == 200:
-            return True
+        get_storage_url(user, password, account='')
+        return True
     except requests.RequestException as e:
         logger.error("Cannot verify if user is reseller. %s" % str(e))
-
     return False
