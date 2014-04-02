@@ -20,6 +20,8 @@ settings.configure(DEBUG=True,
         'swiftbrowser_swauth',
         'swiftbrowser_swauth.tests',),
     SWAUTH_URL = 'http://127.0.0.1:8080/v2/',
+    VERIFY_SSL = False,
+    DISK_SPACE = 1,
     ),
 
 
