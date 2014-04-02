@@ -129,11 +129,11 @@
 
 
 
-    {% if diskUsage %}
+    {% if disk_usage %}
     <tfoot>
         <tr>
             <th colspan="5" class="center">
-                Disk space used: {{diskUsage.spaceUsed}} bytes of {{diskUsage.spaceTotal}} bytes ( {{diskUsage.percentage|stringformat:".4f"}} % )
+                Disk space used: {{disk_usage.space_used|filesizeformat}} of {{disk_usage.space_total|filesizeformat}} ( {{disk_usage.percentage|stringformat:".4f"}} % )
             </th>
         </tr>
     </tfoot>
