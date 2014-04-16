@@ -10,7 +10,7 @@ install:
  - pip install -q Django==$DJANGO
  - pip install python-swiftclient
  - pip install requests
- - pip install git+ssh://git@github.com/cschwede/django-swiftbrowser.git#egg=swiftbrowser
+ - pip install git+git://github.com/cschwede/django-swiftbrowser.git#egg=swiftbrowser
 
 
 script: python runtests.py
