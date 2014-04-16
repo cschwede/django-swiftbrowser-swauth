@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 import requests
 import swiftclient
 import swiftbrowser
+import swiftbrowser_swauth
 
 
 class DummyResponse(object):
@@ -159,3 +160,18 @@ class AccountTest(TestCase):
             headers={'X-Auth-Admin-Key': u'secret',
                      'X-Auth-Admin-User': u'test:tester'})
         self.assertEqual(resp.status_code, 302)
+
+    def test_get_storage_url(self):
+        data = json.dumps({
+            'accounts' : [{'name': 'test'}],
+            'services': {'storage': {'wrong': 'http://127.0.0.1/'}}})
+        requests.get = mock.Mock(return_value=DummyResponse(201, content=data))
+        resp = swiftbrowser_swauth.views.get_storage_url('test', 'pass', 'account')
+        self.assertEqual(resp, None)
+
+        data = json.dumps({
+            'accounts' : [{'name': 'test'}],
+            'services': {'storage': {'local': 'http://127.0.0.1/'}}})
+        requests.get = mock.Mock(return_value=DummyResponse(201, content=data))
+        resp = swiftbrowser_swauth.views.get_storage_url('test', 'pass', 'account')
+        self.assertEqual(resp, 'http://127.0.0.1/')

@@ -464,6 +464,7 @@ def get_storage_url(username, password, account):
         resp = requests.get(url, headers=headers, verify=False)
     except (requests.RequestException) as e:
         logger.error("Cannot retrieve storage url. %s" % str(e))
+        return None
     # By default swauth uses
     # default_swift_cluster = local#http://127.0.0.1:8080/v1
     # If you use a different setting, you need to define the clustername here
