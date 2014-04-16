@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from swiftbrowser_swauth.views import userlist, create_user, delete_user, change_password
 
 urlpatterns = patterns('swiftbrowser_swauth.views',
