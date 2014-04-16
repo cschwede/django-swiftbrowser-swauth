@@ -464,9 +464,15 @@ def get_storage_url(username, password, account):
         resp = requests.get(url, headers=headers, verify=False)
     except (requests.RequestException) as e:
         logger.error("Cannot retrieve storage url. %s" % str(e))
-        return None
-    print resp.content
-    return json.loads(resp.content).get('services', {}).get('storage', {}).get('local')
+    # By default swauth uses
+    # default_swift_cluster = local#http://127.0.0.1:8080/v1
+    # If you use a different setting, you need to define the clustername here
+    # In the default settings this is local
+    if hasattr(settings, 'CLUSTERNAME'):
+        clustername = settings.CLUSTERNAME
+    else:
+        clustername = 'local'
+    return json.loads(resp.content).get('services', {}).get('storage', {}).get(clustername)
 
  
 def _get_account_stat(account, admin_username, admin_password, auth_token):
