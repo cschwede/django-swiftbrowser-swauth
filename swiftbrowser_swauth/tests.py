@@ -139,6 +139,7 @@ class AccountTest(TestCase):
             'services': {'storage': {'local': 'http://127.0.0.1/'}}})
         requests.get = mock.Mock(return_value=DummyResponse(201, content=data))
         requests.put = mock.Mock(return_value=DummyResponse(201))
+        swiftclient.client.get_account = mock.Mock(return_value=({}, None))
         resp = self.client.post(reverse('create_account'),
             {'new_account': 'accountname', 'account_password': 'secret'})
         requests.put.assert_called_with(
