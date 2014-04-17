@@ -20,7 +20,7 @@ setup(
     install_requires=['django>=1.5', 'python-swiftclient', 'requests', 'django-swiftbrowser'],
     dependency_links=[
         "git+ssh://git@github.com/cschwede/django-swiftbrowser.git#egg=swiftbrowser"
-    ]
+    ],
     zip_safe=False,
     classifiers=[
         'Environment :: Web Environment',
